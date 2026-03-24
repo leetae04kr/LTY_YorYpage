@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>나랑 노예 계약 할래?</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #ffe6e6;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            touch-action: none;
+            /* 모바일에서 화면 스크롤이나 줌을 방지 */
+        }
+
+        h1 {
+            color: #ff4d4d;
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            text-align: center;
+            word-break: keep-all;
+        }
+
+        .button-wrapper {
+            position: relative;
+            width: 300px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        button {
+            font-size: 1.5rem;
+            width: 120px;
+            height: 50px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            /* 모바일에서 터치 시 생기는 하이라이트 효과 제거 */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #btn-yes {
+            background-color: #ff4d4d;
+            color: white;
+            left: 20px;
+            z-index: 10;
+            transition: transform 0.2s;
+        }
+
+        #btn-yes:hover,
+        #btn-yes:active {
+            background-color: #ff1a1a;
+            transform: scale(1.05);
+        }
+
+        #btn-no {
+            background-color: #cccccc;
+            color: #333;
+            right: 20px;
+            transition: left 0.3s ease-in-out, top 0.3s ease-in-out;
+        }
+
+        #success-image {
+            display: none;
+            max-width: 90%;
+            max-height: 50vh;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 1s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1 id="main-title">나랑 디벨로퍼 할래?</h1>
+
+    <div class="button-wrapper" id="button-container">
+        <button id="btn-yes">예</button>
+        <button id="btn-no">아니요</button>
+    </div>
+
+    <img id="success-image" src="https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif" alt="성공 이미지">
+
+    <script>
+        const btnNo = document.getElementById('btn-no');
+        const btnYes = document.getElementById('btn-yes');
+        const title = document.getElementById('main-title');
+        const btnContainer = document.getElementById('button-container');
+        const successImage = document.getElementById('success-image');
+
+        // 마우스 및 터치 도망 로직
+        const moveButton = (e) => {
+            if (e.type === 'touchstart') {
+                e.preventDefault(); // 모바일에서 터치 클릭 판정 자체를 무효화
+            }
+
+            const btnWidth = 120;
+            const btnHeight = 50;
+
+            // 현재 화면 크기에 맞춰 도망갈 수 있는 최대 범위 동적 계산
+            const rangeWidth = Math.min(600, window.innerWidth - 40);
+            const rangeHeight = Math.min(400, window.innerHeight - 150);
+
+            const minX = (window.innerWidth - rangeWidth) / 2;
+            const minY = (window.innerHeight - rangeHeight) / 2 + 50;
+
+            // 입력 좌표(마우스 또는 터치) 가져오기
+            let inputX, inputY;
+            if (e.touches && e.touches.length > 0) {
+                inputX = e.touches[0].clientX;
+                inputY = e.touches[0].clientY;
+            } else {
+                inputX = e.clientX;
+                inputY = e.clientY;
+            }
+
+            let targetX, targetY;
+            let distance = 0;
+
+            do {
+                targetX = minX + Math.random() * (rangeWidth - btnWidth);
+                targetY = minY + Math.random() * (rangeHeight - btnHeight);
+
+                const btnCenterX = targetX + (btnWidth / 2);
+                const btnCenterY = targetY + (btnHeight / 2);
+
+                if (inputX !== undefined && inputY !== undefined) {
+                    distance = Math.sqrt(Math.pow(inputX - btnCenterX, 2) + Math.pow(inputY - btnCenterY, 2));
+                } else {
+                    distance = 200;
+                }
+            } while (distance < 100); // 모바일 환경을 고려해 회피 거리를 100px로 설정
+
+            btnNo.style.position = 'fixed';
+            btnNo.style.left = `${targetX}px`;
+            btnNo.style.top = `${targetY}px`;
+        };
+
+        // '예' 버튼 근처로 오면 원래 자리로 복귀
+        const returnButton = () => {
+            btnNo.style.position = 'absolute';
+            btnNo.style.left = 'auto';
+            btnNo.style.right = '20px';
+            btnNo.style.top = 'auto';
+        };
+
+        // 이벤트 리스너 등록 (마우스 + 터치 모두 대응)
+        btnNo.addEventListener('mouseenter', moveButton);
+        btnNo.addEventListener('touchstart', moveButton, { passive: false });
+
+        btnYes.addEventListener('mouseenter', returnButton);
+        btnYes.addEventListener('touchstart', returnButton, { passive: true });
+
+        // '예' 버튼 클릭 시 이벤트
+        btnYes.addEventListener('click', () => {
+            title.innerText = "탁월한 선택입니다! 🎉";
+            btnContainer.style.display = 'none';
+            btnNo.style.display = 'none';
+            successImage.style.display = 'block';
+        });
+    </script>
+</body>
+
+</html>
